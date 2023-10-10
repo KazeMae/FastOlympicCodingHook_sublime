@@ -1,0 +1,16 @@
+{
+	// where your template file is
+	"template-file": "C:\\Users\\风前絮\\OneDrive - Southwest University of Science and Technology\\Code\\Contest\\code\\template.cpp",
+	// where to save your problem information
+	"parse-folder" : "C:\\Users\\风前絮\\OneDrive - Southwest University of Science and Technology\\Code\\Contest\\Train\\",
+	"server-port": 12345,
+	// how to stringify time
+	// %Y = Year
+	// %m = Month
+	// %d = Date
+	// %H = Hour
+	// %M = Minute
+	// %S = Second
+	"time-format" : "%Y-%m-%d %H:%M:%S",
+	"file-suffix": "cpp",
+}
