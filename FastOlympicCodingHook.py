@@ -104,7 +104,7 @@ def MakeHandlerClassFromFilename():
 				self.templateFile = self.settings.get("template-file")
 				self.parsedProblemsFolder = self.settings.get("parse-folder")
 				# print("Received ->", body)
-				g = open(self.templateFile, "r")
+				g = open(self.templateFile, "r", encoding = "utf-8")
 				self.templ = g.read()
 				g.close()
 				if(type(J).__name__ == "array"):
