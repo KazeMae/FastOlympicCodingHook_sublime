@@ -27,40 +27,65 @@ def decodeStringsOfFile(s):
 def MakeHandlerClassFromFilename():
 	class HandleRequests(BaseHTTPRequestHandler):
 		def newFile(self, tests):
-			sttr = tests["url"]
-			contest_id = sttr.split("/")
-			contest_web = contest_id[2].split(".")
-			dirc = ""
-			if contest_web[0] == "codeforces" and contest_id[4] == "problem" : # cf problemset
-				dirc = self.parsedProblemsFolder + contest_web[0] + "/" + contest_id[5] + "/"
-			
-			elif contest_web[0] == "codeforces" and contest_id[3] == "gym" : # GYM
-				dirc = self.parsedProblemsFolder + contest_id[3] + "/" + contest_id[4] + "/"
+			web_url = tests["url"]
+			dirc = ''
+			if 'codeforces.com' in web_url:     # CodeForces
+				web_url = web_url.split("codeforces.com/")[1].split('/')
 
-			elif contest_web[1] == "acwing" : # Acwing
-				dirc = self.parsedProblemsFolder + contest_web[1] + "/"
+				if web_url[0] == 'problemset':  # Problemset
+					dirc = 'Codeforces/' + web_url[2]
 
-			elif contest_web[1] == "luogu" : # Luogu
-				dirc = self.parsedProblemsFolder + "Luogu/"
+				elif web_url[0] == 'contest':   # Contest
+					dirc = 'Codeforces/' + web_url[1]
 
-			elif contest_web[1] == "nowcoder" : # Nowcoder
-				dirc = self.parsedProblemsFolder + contest_web[1] + "/" + contest_id[5] + "/"
-				tests["name"] = contest_id[6] + "_" + tests["name"]
-			elif contest_web[0] == "vjudge" : # Vjudge
-				tid = contest_id[4].split("#")
-				dirc = self.parsedProblemsFolder + contest_web[0] + "/" + tid[0] + "/"
+				elif web_url[0] == 'gym':       # Gym
+					dirc = 'GYM/' + web_url[1]
 
-			elif contest_web[0] == 'loj' : # LibreOJ
-				dirc = self.parsedProblemsFolder + "LibreOJ/p/"
+			elif 'atcoder.jp' in web_url:       # Atcoder
+				web_url = web_url.split("atcoder.jp/")[1].split('/')
+				dirc = 'AtCoder/' + web_url[1]
 
-			else :
-				dirc = self.parsedProblemsFolder + contest_web[0] + "/"
-				if not os.path.exists(dirc):
-					os.mkdir(dirc)
-				dirc = self.parsedProblemsFolder + contest_web[0] + "/" + contest_id[4] + "/"
+			elif 'acwing.com' in web_url:       # Acwing 未适配竞赛
+				web_url = web_url.split("acwing.com/")[1].split('/')
+				dirc = 'Acwing/' + web_url[-2]
+
+			elif 'luogu.com.cn' in web_url:     # Luogu
+				web_url = web_url.split("luogu.com.cn/")[1].split('/')
+
+				if 'contestId' in web_url[-1]:  # Contest
+					dirc = 'Luogu/' + web_url[-1].split('contestId=')[-1] + '/' + web_url[-1].split('?')[0]
+				else:
+					dirc = 'Luogu/' + web_url[-1]
+
+			elif 'ac.nowcoder.com' in web_url:
+				web_url = web_url.split("ac.nowcoder.com/")[1].split('/')
+				if web_url[1] == 'contest':
+					dirc = 'NowCoder/' + web_url[2]
+					tests["name"] = web_url[3] + '_' + tests["name"]
+				else:
+					dirc = 'NowCoder'
+
+			elif 'vjudge.net' in web_url:
+				web_url = web_url.split("vjudge.net/")[1].split('/')
+				if web_url[0] == 'contest':
+					dirc = 'Vjudge/' + web_url[1].split('#')[0]
+				else:
+					dirc = 'Vjudge'
+			elif 'hdu.edu.cn' in web_url:
+				web_url = web_url.split("hdu.edu.cn/")[1].split('/')
+				if web_url[0] == 'contest':
+					dirc = 'HDOJ/' + web_url[-1].split('&')[0].split('cid=')[1]
+					tests["name"] = web_url[-1].split('&')[1].split('pid=')[-1] + '.' + tests["name"]
+				else:
+					dirc = 'HDOJ'
+			else:
+				dirc = tests["group"]
+
+			dirc = self.parsedProblemsFolder + dirc + '/'
 
 			if not os.path.exists(dirc):
 				os.mkdir(dirc)
+			print(dirc)
 			fn = dirc + decodeStringsOfFile(tests["name"].replace(" ", "_")) + '.' + self.settings.get("file-suffix", "cpp")
 			fl_size = -1
 			if not os.path.exists(fn):
@@ -125,7 +150,7 @@ def MakeHandlerClassFromFilename():
 
 class CompetitiveCompanionServer:
 	def startServer():
-		host = 'localhost'
+		host = ''
 		settings = sublime.load_settings("FastOlympicCodingHook.sublime-settings")
 		port = settings.get("server-port", 12345)
 		HandlerClass = MakeHandlerClassFromFilename()
